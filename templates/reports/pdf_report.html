@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Виписка оцінок</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            line-height: 1.5;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        .info {
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+        .summary {
+            text-align: right;
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+        .grade-exam { color: red; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Щоденник здобувача освіти</h1>
+        <h2>Виписка оцінок (Транскрипт)</h2>
+    </div>
+
+    <div class="info">
+        <p><strong>Студент:</strong> {{ student.user.get_full_name }}</p>
+        <p><strong>Група:</strong> {{ student.group.name }}</p>
+        <p><strong>Спеціальність:</strong> {{ student.specialty }}</p>
+        <p><strong>Дата формування:</strong> {% now "d.m.Y H:i" %}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Предмет</th>
+                <th>Тип роботи</th>
+                <th>Оцінка</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for grade in grades %}
+            <tr>
+                <td>{{ grade.date|date:"d.m.Y" }}</td>
+                <td>{{ grade.subject.name }}</td>
+                <td>{{ grade.get_type_display }}</td>
+                <td class="{% if grade.type == 'exam' %}grade-exam{% endif %}">
+                    <strong>{{ grade.value }}</strong>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="text-align: center;">Оцінок поки немає.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="summary">
+        <p>Загальний середній бал: <strong>{{ overall_avg }} / 100</strong></p>
+    </div>
+
+</body>
+</html>

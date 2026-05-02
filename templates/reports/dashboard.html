@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Рейтинг успішності{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mt-4 mb-4">
+    <h2>Успішність: {{ student.user.get_full_name }}</h2>
+    <a href="{% url 'export_pdf' %}" target="_blank" class="btn btn-danger">
+        <i class="bi bi-file-pdf"></i> Експорт у PDF
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Середній бал за предметами</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="gradesChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Безпечно парсимо JSON, який ми передали з view
+        const rawData = JSON.parse('{{ chart_data_json|escapejs }}');
+        
+        const ctx = document.getElementById('gradesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar', // Тип графіка (стовпчиковий)
+            data: {
+                labels: rawData.labels,
+                datasets: [{
+                    label: 'Середній бал',
+                    data: rawData.data,
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100 // Наша шкала до 100
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
