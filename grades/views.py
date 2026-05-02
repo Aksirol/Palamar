@@ -8,6 +8,7 @@ from schedule.models import Schedule
 from .models import Grade
 from .forms import GradeForm
 from .filters import GradeFilter
+from django.shortcuts import redirect
 
 
 class GradeListView(LoginRequiredMixin, ListView):
@@ -44,6 +45,13 @@ class GradeCreateView(TeacherRequiredMixin, SuccessMessageMixin, CreateView):
     success_url = reverse_lazy('grade_list')
     success_message = "Оцінку успішно виставлено!"
 
+    def dispatch(self, request, *args, **kwargs):
+        # Якщо це адмін (суперкористувач), зручно перенаправляємо його в Django Admin
+        if request.user.is_authenticated and request.user.is_superuser:
+            messages.info(request, "Адміністратори виставляють оцінки через цю панель.")
+            return redirect('admin:grades_grade_add')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Виставити оцінку'
@@ -75,12 +83,5 @@ class GradeCreateView(TeacherRequiredMixin, SuccessMessageMixin, CreateView):
             else:
                 form.add_error('student', "У студента не вказана група.")
                 return self.form_invalid(form)
-
-        # Якщо оцінку ставить адмін (через цю форму)
-        elif user.is_superuser:
-            # Для простоти адміну доведеться ставити оцінку від імені якогось викладача.
-            # Якщо треба, щоб адмін вибирав викладача - треба кастомізувати форму.
-            form.add_error(None, "Адміністратор повинен виставляти оцінки через Адмін-панель Django.")
-            return self.form_invalid(form)
 
         return super().form_valid(form)

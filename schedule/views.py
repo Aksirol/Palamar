@@ -10,33 +10,40 @@ from .forms import ScheduleForm
 
 class ScheduleListView(LoginRequiredMixin, ListView):
     template_name = 'schedule/schedule_list.html'
-    context_object_name = 'schedule_data'  # Передаємо згруповані дані
+    context_object_name = 'raw_schedule'  # Це буде сирий QuerySet
 
     def get_queryset(self):
         user = self.request.user
 
-        # Отримуємо QuerySet залежно від ролі + select_related (вирішення N+1)
         if user.role == 'student':
             qs = Schedule.objects.filter(group=user.student_profile.group).select_related('subject', 'teacher__user',
                                                                                           'group')
         elif user.role == 'teacher':
             qs = Schedule.objects.filter(teacher=user.teacher_profile).select_related('subject', 'teacher__user',
                                                                                       'group')
-        else:  # Адміністратор бачить все
+        else:
             qs = Schedule.objects.all().select_related('subject', 'teacher__user', 'group')
 
-        # Групуємо заняття по днях (створюємо список словників для зручності в шаблоні)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        qs = self.object_list  # Отримуємо QuerySet з get_queryset
+
+        # Групуємо заняття по днях
         schedule_data = []
         for day_num, day_name in Schedule.DAYS_OF_WEEK:
             lessons = qs.filter(day_of_week=day_num)
-            if lessons.exists() or user.role in ['admin', 'teacher']:
-                # Показуємо день, якщо є уроки, або якщо це вчитель (щоб міг додати)
+            if lessons.exists() or user.role in ['admin', 'teacher'] or user.is_superuser:
                 schedule_data.append({
                     'day_name': day_name,
                     'lessons': lessons
                 })
 
-        return schedule_data
+        # Передаємо згруповані дані в шаблон
+        context['schedule_data'] = schedule_data
+        return context
 
 
 class ScheduleCreateView(TeacherRequiredMixin, SuccessMessageMixin, CreateView):

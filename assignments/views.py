@@ -6,11 +6,12 @@ from django.utils import timezone
 from accounts.mixins import TeacherRequiredMixin, StudentRequiredMixin
 from .models import Assignment, Submission
 from .forms import AssignmentForm, SubmissionForm, GradeSubmissionForm
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 # --- ЗАВДАННЯ ---
 
-class AssignmentListView(ListView):
+class AssignmentListView(LoginRequiredMixin, ListView):
     model = Assignment
     template_name = 'assignments/assignment_list.html'
     context_object_name = 'assignments'
