@@ -1,0 +1,289 @@
+# ============================================================
+#  ЩОДЕННИК ЗДОБУВАЧА ОСВІТИ — .gitignore
+#  Python 3.12 | Django 5.x | SQLite
+# ============================================================
+
+
+# ============================================================
+#  PYTHON
+# ============================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.pyc
+
+# Дистрибутивні та збірні папки
+dist/
+build/
+*.egg-info/
+*.egg
+.eggs/
+wheels/
+*.whl
+*.spec
+
+# Типи артефактів setuptools
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+
+# ============================================================
+#  ВІРТУАЛЬНЕ СЕРЕДОВИЩЕ
+# ============================================================
+venv/
+.venv/
+env/
+.env/
+ENV/
+env.bak/
+venv.bak/
+Pipfile.lock
+poetry.lock
+.python-version
+
+
+# ============================================================
+#  ЗМІННІ СЕРЕДОВИЩА ТА СЕКРЕТИ
+# ============================================================
+.env
+.env.*
+!.env.example
+*.secret
+secrets.json
+local_settings.py
+
+
+# ============================================================
+#  DJANGO
+# ============================================================
+
+# Статичні файли (збираються командою collectstatic)
+/staticfiles/
+/static_collected/
+/static_root/
+
+# Медіафайли користувачів (фото профілів, файли завдань)
+/media/
+media/
+uploads/
+
+# Django кеш шаблонів
+*.pyc
+__pycache__/
+
+# Django логи
+*.log
+logs/
+django.log
+debug.log
+
+# Сесії (якщо зберігаються у файлах)
+django_session/
+
+# Тимчасові файли міграцій (НЕ ігнорувати самі міграції!)
+# migrations/   <-- НЕ розкоментовувати! Міграції мають бути в репо
+
+
+# ============================================================
+#  БАЗА ДАНИХ
+# ============================================================
+
+# SQLite — головна БД проєкту
+# УВАГА: для дипломної роботи db.sqlite3 МОЖНА залишити в репо
+# з тестовими даними. Якщо не потрібно — розкоментуй:
+# db.sqlite3
+# db.sqlite3-shm
+# db.sqlite3-wal
+
+# Резервні копії БД
+*.bak
+*.sql
+*.dump
+*.db.bak
+db_backup/
+backups/
+
+
+# ============================================================
+#  ТЕСТУВАННЯ
+# ============================================================
+.coverage
+.coverage.*
+coverage.xml
+coverage/
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+pytest.ini
+nosetests.xml
+test-results/
+*.test.db
+
+
+# ============================================================
+#  ГЕНЕРОВАНІ ЗВІТИ ТА ДОКУМЕНТИ
+# ============================================================
+# PDF-звіти, що генеруються динамічно
+reports/generated/
+*.pdf
+!docs/*.pdf
+
+# Експортовані файли
+exports/
+*.xlsx
+*.csv
+
+
+# ============================================================
+#  СЕРЕДОВИЩА РОЗРОБКИ (IDE / РЕДАКТОРИ)
+# ============================================================
+
+# VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# PyCharm / IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim / Neovim
+*.swp
+*.swo
+*~
+.netrwhist
+Session.vim
+.vim/
+
+# Emacs
+*#
+.emacs.desktop
+.emacs.desktop.lock
+tramp
+.\#*
+
+# Spyder
+.spyderproject.cfg
+.spyproject/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+
+# ============================================================
+#  ОПЕРАЦІЙНІ СИСТЕМИ
+# ============================================================
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+Icon?
+.DocumentRevisions-V100
+.fseventsd
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+
+# ============================================================
+#  ВУЗЛОВІ МОДУЛІ (якщо використовується npm/webpack)
+# ============================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn/
+package-lock.json
+yarn.lock
+
+
+# ============================================================
+#  КЕШІ РІЗНИХ ІНСТРУМЕНТІВ
+# ============================================================
+.cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.ruff_cache/
+.hypothesis/
+.scrapy/
+.pytype/
+.pybuilder/
+target/
+
+
+# ============================================================
+#  ДОКУМЕНТАЦІЯ (автогенерована)
+# ============================================================
+docs/_build/
+docs/generated/
+site/
+.mkdocs/
+
+
+# ============================================================
+#  CELERY / REDIS (якщо додаватиметься у майбутньому)
+# ============================================================
+celerybeat-schedule
+celerybeat.pid
+*.pid
+
+
+# ============================================================
+#  DOCKER (якщо додаватиметься у майбутньому)
+# ============================================================
+.dockerignore
+docker-compose.override.yml
+.docker/
+
+
+# ============================================================
+#  ТИМЧАСОВІ ФАЙЛИ
+# ============================================================
+*.tmp
+*.temp
+*.bak
+*.orig
+*.swp
+tmp/
+temp/

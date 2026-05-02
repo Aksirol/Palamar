@@ -1,0 +1,21 @@
+[
+  {
+    "model": "subjects.group",
+    "pk": 1,
+    "fields": {
+      "name": "КН-21",
+      "faculty": "Факультет інформаційних технологій",
+      "year_formed": 2023
+    }
+  },
+  {
+    "model": "subjects.subject",
+    "pk": 1,
+    "fields": {
+      "name": "Програмування на Python",
+      "credits": 5,
+      "semester": 3,
+      "description": "Основи розробки на Python та фреймворку Django."
+    }
+  }
+]
