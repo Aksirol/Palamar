@@ -122,3 +122,9 @@ class GradeSubmissionView(TeacherRequiredMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['title'] = f'Оцінити роботу: {self.object.student.user.get_full_name()}'
         return context
+
+class AssignmentListView(LoginRequiredMixin, ListView):
+    model = Assignment
+    template_name = 'assignments/assignment_list.html'
+    context_object_name = 'assignments'
+    paginate_by = 10  # Додаємо пагінацію

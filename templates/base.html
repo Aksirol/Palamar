@@ -1,4 +1,3 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -6,39 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Щоденник здобувача освіти{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar-brand { font-weight: bold; letter-spacing: 1px; }
+        /* Робимо таблиці зручними на мобільних */
+        .table-responsive { border-radius: .5rem; box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); }
+    </style>
 </head>
-<body class="bg-light">
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm mb-4">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">🎓 Щоденник</a>
+            <a class="navbar-brand" href="{% url 'home' %}"><i class="bi bi-mortarboard-fill text-warning"></i> Щоденник</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'schedule_list' %}">Розклад</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'subject_list' %}">Предмети</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'group_list' %}">Групи</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'assignment_list' %}">Завдання</a>
-                        </li>
-                        {% if user.role == 'student' %}
-                            <li class="nav-item">
-                                <a class="nav-link text-info" href="{% url 'student_dashboard' %}">📊 Мій рейтинг</a>
-                            </li>
-                        {% endif %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'schedule_list' %}"><i class="bi bi-calendar3"></i> Розклад</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'grade_list' %}"><i class="bi bi-journal-bookmark-fill"></i> Журнал оцінок</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'assignment_list' %}"><i class="bi bi-briefcase"></i> Завдання</a></li>
+
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Відвідуваність</a>
-                            <ul class="dropdown-menu">
-                                {% if user.role == 'teacher' or user.role == 'admin' %}
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i class="bi bi-people"></i> Відвідуваність</a>
+                            <ul class="dropdown-menu shadow-sm">
+                                {% if user.role == 'teacher' or user.is_superuser %}
                                     <li><a class="dropdown-item" href="{% url 'attendance_mark' %}">Відмітити (Журнал)</a></li>
                                 {% endif %}
                                 {% if user.role == 'student' %}
@@ -46,35 +39,58 @@
                                 {% endif %}
                             </ul>
                         </li>
+
+                        {% if user.role == 'teacher' or user.is_superuser %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i class="bi bi-gear"></i> Довідники</a>
+                            <ul class="dropdown-menu shadow-sm">
+                                <li><a class="dropdown-item" href="{% url 'subject_list' %}">Предмети</a></li>
+                                <li><a class="dropdown-item" href="{% url 'group_list' %}">Групи</a></li>
+                            </ul>
+                        </li>
+                        {% endif %}
+
+                        {% if user.role == 'student' %}
+                            <li class="nav-item"><a class="nav-link text-info fw-bold" href="{% url 'student_dashboard' %}"><i class="bi bi-bar-chart-fill"></i> Мій рейтинг</a></li>
+                        {% endif %}
                     {% endif %}
                 </ul>
-                <ul class="navbar-nav">
+                <ul class="navbar-nav align-items-lg-center">
                     {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <span class="nav-link text-warning">Роль: {{ user.get_role_display }}</span>
+                        <li class="nav-item text-light me-3 d-none d-lg-block">
+                            <i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.username }}
+                            <span class="badge bg-secondary ms-1">{{ user.get_role_display }}</span>
                         </li>
                         <li class="nav-item">
                             <form method="post" action="{% url 'logout' %}" class="d-inline">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-link nav-link">Вихід</button>
+                                <button type="submit" class="btn btn-outline-danger btn-sm mt-2 mt-lg-0"><i class="bi bi-box-arrow-right"></i> Вихід</button>
                             </form>
                         </li>
                     {% else %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Вхід</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Реєстрація</a></li>
+                        <li class="nav-item"><a class="btn btn-primary btn-sm ms-lg-2 mt-2 mt-lg-0" href="{% url 'register' %}">Реєстрація</a></li>
                     {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
-    <div class="container mt-4">
+
+    <div class="container pb-5">
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                            {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill"></i>{% endif %}
+                            {% if message.tags == 'error' %}<i class="bi bi-exclamation-triangle-fill"></i>{% endif %}
+                            {% if message.tags == 'info' %}<i class="bi bi-info-circle-fill"></i>{% endif %}
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
                 </div>
-            {% endfor %}
+            </div>
         {% endif %}
 
         {% block content %}

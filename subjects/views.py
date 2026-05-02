@@ -94,3 +94,16 @@ class GroupDeleteView(TeacherRequiredMixin, DeleteView):
     def form_valid(self, form):
         messages.success(self.request, "Групу успішно видалено.")
         return super().form_valid(form)
+
+
+class SubjectListView(ListView):
+    model = Subject
+    template_name = 'subjects/subject_list.html'
+    context_object_name = 'subjects'
+    paginate_by = 10  # Додаємо пагінацію (10 на сторінку)
+
+class GroupListView(ListView):
+    model = Group
+    template_name = 'subjects/group_list.html'
+    context_object_name = 'groups'
+    paginate_by = 10  # Додаємо пагінацію
