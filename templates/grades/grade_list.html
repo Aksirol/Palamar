@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Журнал оцінок{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+    <h2>Журнал оцінок</h2>
+    {% if user.role == 'teacher' %}
+        <a href="{% url 'grade_add' %}" class="btn btn-primary">+ Виставити оцінку</a>
+    {% endif %}
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-funnel"></i> Фільтрація</h5>
+            </div>
+            <div class="card-body">
+                <form method="get">
+                    {{ filter.form|crispy }}
+                    <button type="submit" class="btn btn-outline-primary w-100 mt-3">Застосувати</button>
+                    <a href="{% url 'grade_list' %}" class="btn btn-outline-secondary w-100 mt-2">Скинути</a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-9">
+        <div class="table-responsive bg-white shadow-sm rounded">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Дата</th>
+                        <th>Студент</th>
+                        <th>Предмет</th>
+                        <th>Тип</th>
+                        <th>Оцінка</th>
+                        {% if user.role != 'teacher' %}
+                        <th>Викладач</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grade in grades %}
+                    <tr>
+                        <td>{{ grade.date|date:"d.m.Y" }}</td>
+                        <td>{{ grade.student.user.get_full_name }}</td>
+                        <td class="fw-bold">{{ grade.subject.name }}</td>
+                        <td>
+                            {% if grade.type == 'exam' %}
+                                <span class="badge bg-danger">{{ grade.get_type_display }}</span>
+                            {% elif grade.type == 'credit' %}
+                                <span class="badge bg-warning text-dark">{{ grade.get_type_display }}</span>
+                            {% elif grade.type == 'module' %}
+                                <span class="badge bg-info text-dark">{{ grade.get_type_display }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ grade.get_type_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge rounded-pill bg-success fs-6">{{ grade.value }}</span>
+                        </td>
+                        {% if user.role != 'teacher' %}
+                        <td class="text-muted small">{{ grade.teacher.user.get_last_name }}</td>
+                        {% endif %}
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">Оцінок не знайдено.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if is_paginated %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Попередня</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Сторінка {{ page_obj.number }} з {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Наступна</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

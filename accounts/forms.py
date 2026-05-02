@@ -10,7 +10,8 @@ class CustomUserCreationForm(UserCreationForm):
 
     def clean_photo(self):
         photo = self.cleaned_data.get('photo')
-        if photo:
+        # Перевіряємо, чи фото існує І чи є воно файлом (має атрибут 'size')
+        if photo and hasattr(photo, 'size'):
             # Обмеження у 2 МБ (2 * 1024 * 1024 байт)
             if photo.size > 2 * 1024 * 1024:
                 raise ValidationError("Розмір фото не повинен перевищувати 2 МБ.")

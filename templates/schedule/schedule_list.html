@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Розклад занять{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+    <h2>Розклад занять</h2>
+    {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}
+        <a href="{% url 'schedule_add' %}" class="btn btn-primary">+ Додати заняття</a>
+    {% endif %}
+</div>
+
+<div class="row">
+    {% for day in schedule_data %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-dark text-white text-center">
+                    <h5 class="mb-0">{{ day.day_name }}</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for lesson in day.lessons %}
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong class="text-primary">{{ lesson.start_time|time:"H:i" }} - {{ lesson.end_time|time:"H:i" }}</strong>
+                                    <span class="badge bg-secondary">{{ lesson.get_lesson_type_display }}</span>
+                                </div>
+                                <div class="fw-bold">{{ lesson.subject.name }}</div>
+                                <div class="text-muted small">
+                                    <i class="bi bi-person"></i> {{ lesson.teacher.user.get_full_name }} <br>
+                                    <i class="bi bi-geo-alt"></i> Ауд: {{ lesson.room }} | Група: {{ lesson.group.name }}
+                                </div>
+                                {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}
+                                    <div class="mt-2 text-end">
+                                        <a href="{% url 'schedule_edit' lesson.pk %}" class="btn btn-sm btn-outline-warning">Ред.</a>
+                                        <a href="{% url 'schedule_delete' lesson.pk %}" class="btn btn-sm btn-outline-danger">Вид.</a>
+                                    </div>
+                                {% endif %}
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-center text-muted py-4">Занять немає</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

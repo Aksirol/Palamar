@@ -6,14 +6,10 @@
 <div class="text-center mt-5">
     <h1>Вітаємо, {{ user.username }}!</h1>
     
-    <form action="{% url 'logout' %}" method="post" class="mt-3">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Вийти з системи</button>
-    </form>
-    
     <div class="mt-4">
-        <a href="{% url 'subject_list' %}" class="btn btn-outline-primary mx-2">Модуль Предметів</a>
-        <a href="{% url 'group_list' %}" class="btn btn-outline-primary mx-2">Модуль Груп</a>
+        <a href="{% url 'subject_list' %}" class="btn btn-outline-primary mx-2 mb-2">Модуль Предметів</a>
+        <a href="{% url 'group_list' %}" class="btn btn-outline-primary mx-2 mb-2">Модуль Груп</a>
+        <a href="{% url 'schedule_list' %}" class="btn btn-outline-success mx-2 mb-2">Розклад занять</a>
     </div>
 </div>
 {% endblock %}

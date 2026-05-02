@@ -13,6 +13,8 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('education/', include('subjects.urls')),
     path('', home_view, name='home'),
+    path('schedule/', include('schedule.urls')),
+    path('grades/', include('grades.urls')),
 ]
 
 if settings.DEBUG:
