@@ -18,15 +18,26 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'schedule_list' %}">Розклад</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'subject_list' %}">Предмети</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'group_list' %}">Групи</a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'schedule_list' %}">Розклад</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'subject_list' %}">Предмети</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'group_list' %}">Групи</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Відвідуваність</a>
+                            <ul class="dropdown-menu">
+                                {% if user.role == 'teacher' or user.role == 'admin' %}
+                                    <li><a class="dropdown-item" href="{% url 'attendance_mark' %}">Відмітити (Журнал)</a></li>
+                                {% endif %}
+                                {% if user.role == 'student' %}
+                                    <li><a class="dropdown-item" href="{% url 'attendance_stats' %}">Моя статистика</a></li>
+                                {% endif %}
+                            </ul>
+                        </li>
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav">

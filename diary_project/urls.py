@@ -15,6 +15,7 @@ urlpatterns = [
     path('', home_view, name='home'),
     path('schedule/', include('schedule.urls')),
     path('grades/', include('grades.urls')),
+    path('attendance/', include('attendance.urls')),
 ]
 
 if settings.DEBUG:

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Моя статистика відвідуваності{% endblock %}
+
+{% block content %}
+<h2 class="mt-4 mb-4">Статистика відвідуваності</h2>
+
+<div class="row">
+    {% for stat in stats %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card shadow-sm h-100 {% if stat.warning %}border-danger{% else %}border-success{% endif %}">
+            <div class="card-header {% if stat.warning %}bg-danger{% else %}bg-success{% endif %} text-white">
+                <h5 class="mb-0">{{ stat.subject.name }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fs-1 fw-bold {% if stat.warning %}text-danger{% else %}text-success{% endif %}">
+                        {{ stat.percentage }}%
+                    </span>
+                    {% if stat.warning %}
+                        <span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> Критично</span>
+                    {% endif %}
+                </div>
+                
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Всього занять <span class="badge bg-secondary rounded-pill">{{ stat.total }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Присутній <span class="badge bg-success rounded-pill">{{ stat.present }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Відсутній <span class="badge bg-danger rounded-pill">{{ stat.absent }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center mt-5">
+        <p class="text-muted">Даних про відвідуваність поки немає.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

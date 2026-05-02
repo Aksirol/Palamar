@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Журнал відвідуваності{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Оберіть заняття</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Група</label>
+                        <select name="group" class="form-select" required>
+                            <option value="">-- Оберіть групу --</option>
+                            {% for g in groups %}
+                                <option value="{{ g.id }}" {% if g.id == selected_group %}selected{% endif %}>{{ g.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Предмет</label>
+                        <select name="subject" class="form-select" required>
+                            <option value="">-- Оберіть предмет --</option>
+                            {% for s in subjects %}
+                                <option value="{{ s.id }}" {% if s.id == selected_subject %}selected{% endif %}>{{ s.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Дата</label>
+                        <input type="date" name="date" class="form-control" value="{{ selected_date }}" required>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-secondary w-100">Показати список</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if students %}
+<div class="row">
+    <div class="col-12">
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="group" value="{{ selected_group }}">
+            <input type="hidden" name="subject" value="{{ selected_subject }}">
+            <input type="hidden" name="date" value="{{ selected_date }}">
+
+            <div class="card shadow-sm border-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="50">#</th>
+                            <th>Студент</th>
+                            <th width="150" class="text-center">Присутність</th>
+                            <th>Причина відсутності (якщо є)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td class="fw-bold">{{ student.user.get_full_name }}</td>
+                            <td class="text-center">
+                                <div class="form-check form-switch d-flex justify-content-center">
+                                    <input class="form-check-input fs-4" type="checkbox" name="status_{{ student.pk }}" 
+                                        {% if existing_data %}
+                                            {% for key, record in existing_data.items %}
+                                                {% if key == student.pk and record.is_present %}checked{% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            checked {% endif %}
+                                    >
+                                </div>
+                            </td>
+                            <td>
+                                <input type="text" name="reason_{{ student.pk }}" class="form-control form-control-sm" placeholder="Напр. Хворіє"
+                                    {% if existing_data %}
+                                        {% for key, record in existing_data.items %}
+                                            {% if key == student.pk and not record.is_present %}value="{{ record.reason }}"{% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                >
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="card-footer bg-white text-end py-3">
+                    <button type="submit" class="btn btn-success px-5">Зберегти відвідуваність</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
