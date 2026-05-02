@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Список груп{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+    <h2>Групи</h2>
+    {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}
+        <a href="{% url 'subject_add' %}" class="btn btn-primary">+ Додати групу</a>
+    {% endif %}
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover table-bordered shadow-sm bg-white">
+        <thead class="table-light">
+            <tr>
+                <th>Назва групи</th>
+                <th>Факультет</th>
+                <th>Рік формування</th>
+                {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}
+                <th width="150">Дії</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in groups %}
+            <tr>
+                <td><strong>{{ group.name }}</strong></td>
+                <td>{{ group.faculty }}</td>
+                <td>{{ group.year_formed }}</td>
+                {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}
+                <td>
+                    <a href="{% url 'subject_edit' subject.pk %}" class="btn btn-sm btn-warning">Ред.</a>
+                    <a href="{% url 'subject_delete' subject.pk %}" class="btn btn-sm btn-danger">Вид.</a>
+                </td>
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center text-muted">Груп поки немає.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

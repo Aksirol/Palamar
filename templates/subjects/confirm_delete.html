@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Підтвердження видалення{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 mx-auto mt-5 text-center">
+        <div class="alert alert-danger shadow-sm">
+            <h4>Ви впевнені?</h4>
+            <p>Ви дійсно хочете видалити <strong>{{ object.name }}</strong>? Цю дію неможливо скасувати.</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Так, видалити</button>
+                <a href="javascript:history.back()" class="btn btn-secondary">Скасувати</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
