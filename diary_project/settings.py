@@ -89,10 +89,13 @@ WSGI_APPLICATION = 'diary_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+DB_DIR = BASE_DIR / 'db_data'
+DB_DIR.mkdir(exist_ok=True)
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DB_DIR / 'db.sqlite3',
     }
 }
 

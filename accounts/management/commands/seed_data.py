@@ -419,7 +419,7 @@ class Command(BaseCommand):
                     "password": make_password("teacher123"),
                 },
             )
-            teacher, _ = Teacher.objects.get_or_create(
+            teacher, _ = Teacher.objects.update_or_create(  # <--- ЗМІНА ТУТ
                 user=user,
                 defaults={
                     "department": data["department"],
@@ -483,7 +483,7 @@ class Command(BaseCommand):
                         "password": make_password("student123"),
                     },
                 )
-                student, _ = Student.objects.get_or_create(
+                student, _ = Student.objects.update_or_create(  # <--- ЗМІНА ТУТ
                     user=user,
                     defaults={
                         "group": group_obj,

@@ -1,0 +1,19 @@
+services:
+  web:
+    build: .
+    container_name: diary_django
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      # Прокидаємо код для зручної розробки (гаряче перезавантаження)
+      - .:/app
+      # Зберігаємо базу даних і медіафайли у постійних томах Докера
+      - sqlite_data:/app/db_data
+      - media_data:/app/media
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+
+volumes:
+  sqlite_data:
+  media_data:
