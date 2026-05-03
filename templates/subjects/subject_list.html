@@ -1,45 +1,117 @@
 {% extends 'base.html' %}
+{% load query_tags %}
 
 {% block title %}Список предметів{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mt-4 mb-3">
-    <h2>Предмети</h2>
+<div class="d-flex justify-content-between align-items-center mt-2 mb-4">
+    <h2><i class="bi bi-book-fill text-primary"></i> Предмети</h2>
     {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}
-        <a href="{% url 'subject_add' %}" class="btn btn-primary">+ Додати предмет</a>
+        <a href="{% url 'subject_add' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Додати предмет
+        </a>
     {% endif %}
 </div>
 
-<div class="table-responsive">
-    <table class="table table-hover table-bordered shadow-sm bg-white">
+{# ── Панель пошуку і фільтрації ── #}
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold text-muted mb-1">ПОШУК ЗА НАЗВОЮ</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" value="{{ q }}"
+                           class="form-control" placeholder="Назва предмету...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-muted mb-1">СЕМЕСТР</label>
+                <select name="semester" class="form-select">
+                    <option value="">Всі семестри</option>
+                    {% for s in semesters %}
+                        <option value="{{ s }}" {% if semester == s|stringformat:"s" %}selected{% endif %}>
+                            {{ s }} семестр
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-muted mb-1">СОРТУВАННЯ</label>
+                <select name="ordering" class="form-select">
+                    <option value="semester"  {% if ordering == 'semester'  %}selected{% endif %}>За семестром ↑</option>
+                    <option value="-semester" {% if ordering == '-semester' %}selected{% endif %}>За семестром ↓</option>
+                    <option value="name"      {% if ordering == 'name'      %}selected{% endif %}>За назвою А-Я</option>
+                    <option value="-name"     {% if ordering == '-name'     %}selected{% endif %}>За назвою Я-А</option>
+                    <option value="credits"   {% if ordering == 'credits'   %}selected{% endif %}>За кредитами ↑</option>
+                    <option value="-credits"  {% if ordering == '-credits'  %}selected{% endif %}>За кредитами ↓</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel"></i> Фільтр
+                </button>
+                <a href="{% url 'subject_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# ── Таблиця ── #}
+<div class="table-responsive shadow-sm rounded">
+    <table class="table table-hover table-bordered align-middle mb-0 bg-white">
         <thead class="table-light">
             <tr>
-                <th>Назва</th>
-                <th>Семестр</th>
-                <th>Кредити</th>
+                <th>
+                    <a href="?{% url_replace ordering='name' %}" class="text-decoration-none text-dark">
+                        Назва <i class="bi bi-arrow-down-up text-muted small"></i>
+                    </a>
+                </th>
+                <th>
+                    <a href="?{% url_replace ordering='semester' %}" class="text-decoration-none text-dark">
+                        Семестр <i class="bi bi-arrow-down-up text-muted small"></i>
+                    </a>
+                </th>
+                <th>
+                    <a href="?{% url_replace ordering='credits' %}" class="text-decoration-none text-dark">
+                        Кредити <i class="bi bi-arrow-down-up text-muted small"></i>
+                    </a>
+                </th>
                 {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}
-                <th width="150">Дії</th>
+                <th width="130">Дії</th>
                 {% endif %}
             </tr>
         </thead>
         <tbody>
             {% for subject in subjects %}
             <tr>
-                <td>{{ subject.name }}</td>
-                <td>{{ subject.semester }}</td>
-                <td>{{ subject.credits }}</td>
+                <td class="fw-semibold">{{ subject.name }}</td>
+                <td><span class="badge bg-light text-dark border">{{ subject.semester }} сем.</span></td>
+                <td>{{ subject.credits }} кред.</td>
                 {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}
                 <td>
-                    <a href="{% url 'subject_edit' subject.pk %}" class="btn btn-sm btn-warning">Ред.</a>
-                    <a href="{% url 'subject_delete' subject.pk %}" class="btn btn-sm btn-danger">Вид.</a>
+                    <a href="{% url 'subject_edit' subject.pk %}" class="btn btn-sm btn-outline-warning">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'subject_delete' subject.pk %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                    </a>
                 </td>
                 {% endif %}
             </tr>
             {% empty %}
-            <tr><td colspan="4" class="text-center text-muted">Предметів поки немає.</td></tr>
+            <tr>
+                <td colspan="4" class="text-center text-muted py-5">
+                    <i class="bi bi-search fs-2 d-block mb-2"></i>
+                    Предметів не знайдено.
+                </td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
-    {% include 'includes/pagination.html' %}
+
+{% include 'includes/pagination.html' %}
 {% endblock %}

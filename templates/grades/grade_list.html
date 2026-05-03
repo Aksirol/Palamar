@@ -1,43 +1,95 @@
 {% extends 'base.html' %}
+{% load query_tags %}
 {% load crispy_forms_tags %}
 
 {% block title %}Журнал оцінок{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mt-4 mb-3">
-    <h2>Журнал оцінок</h2>
+<div class="d-flex justify-content-between align-items-center mt-2 mb-4">
+    <h2><i class="bi bi-journal-bookmark-fill text-primary"></i> Журнал оцінок</h2>
     {% if user.role == 'teacher' %}
-        <a href="{% url 'grade_add' %}" class="btn btn-primary">+ Виставити оцінку</a>
+        <a href="{% url 'grade_add' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Виставити оцінку
+        </a>
     {% endif %}
 </div>
 
-<div class="row">
-    <div class="col-md-3 mb-4">
-        <div class="card shadow-sm">
-            <div class="card-header bg-secondary text-white">
-                <h5 class="mb-0"><i class="bi bi-funnel"></i> Фільтрація</h5>
+<div class="row g-4">
+
+    {# ── Панель фільтрації ── #}
+    <div class="col-lg-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="bi bi-funnel-fill"></i> Фільтрація та сортування</h6>
             </div>
             <div class="card-body">
-                <form method="get">
-                    {{ filter.form|crispy }}
-                    <button type="submit" class="btn btn-outline-primary w-100 mt-3">Застосувати</button>
-                    <a href="{% url 'grade_list' %}" class="btn btn-outline-secondary w-100 mt-2">Скинути</a>
+                <form method="get" id="filter-form">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-muted">ПОШУК</label>
+                        {{ filter.form.student_name }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-muted">ПРЕДМЕТ</label>
+                        {{ filter.form.subject }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-muted">ТИП ОЦІНКИ</label>
+                        {{ filter.form.type }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-muted">З ДАТИ</label>
+                        {{ filter.form.date_from }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-muted">ПО ДАТУ</label>
+                        {{ filter.form.date_to }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-muted">СОРТУВАННЯ</label>
+                        {{ filter.form.ordering }}
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-search"></i> Застосувати
+                        </button>
+                        <a href="{% url 'grade_list' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-x-circle"></i> Скинути
+                        </a>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <div class="col-md-9">
-        <div class="table-responsive bg-white shadow-sm rounded">
-            <table class="table table-hover align-middle mb-0">
+    {# ── Таблиця оцінок ── #}
+    <div class="col-lg-9">
+
+        {# Лічильник результатів #}
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <small class="text-muted">
+                Знайдено записів: <strong>{{ paginator.count }}</strong>
+            </small>
+        </div>
+
+        <div class="table-responsive shadow-sm rounded">
+            <table class="table table-hover align-middle mb-0 bg-white">
                 <thead class="table-light">
                     <tr>
-                        <th>Дата</th>
+                        {# Клікабельні заголовки для сортування #}
+                        <th>
+                            <a href="?{% url_replace ordering='date' %}" class="text-decoration-none text-dark">
+                                Дата <i class="bi bi-arrow-down-up text-muted small"></i>
+                            </a>
+                        </th>
                         <th>Студент</th>
                         <th>Предмет</th>
                         <th>Тип</th>
-                        <th>Оцінка</th>
-                        {% if user.role != 'teacher' %}
+                        <th>
+                            <a href="?{% url_replace ordering='value' %}" class="text-decoration-none text-dark">
+                                Оцінка <i class="bi bi-arrow-down-up text-muted small"></i>
+                            </a>
+                        </th>
+                        {% if user.role != 'student' %}
                         <th>Викладач</th>
                         {% endif %}
                     </tr>
@@ -45,9 +97,9 @@
                 <tbody>
                     {% for grade in grades %}
                     <tr>
-                        <td>{{ grade.date|date:"d.m.Y" }}</td>
-                        <td>{{ grade.student.user.get_full_name }}</td>
-                        <td class="fw-bold">{{ grade.subject.name }}</td>
+                        <td class="text-muted small">{{ grade.date|date:"d.m.Y" }}</td>
+                        <td class="fw-semibold">{{ grade.student.user.get_full_name }}</td>
+                        <td>{{ grade.subject.name }}</td>
                         <td>
                             {% if grade.type == 'exam' %}
                                 <span class="badge bg-danger">{{ grade.get_type_display }}</span>
@@ -60,33 +112,35 @@
                             {% endif %}
                         </td>
                         <td>
-                            <span class="badge rounded-pill bg-success fs-6">{{ grade.value }}</span>
+                            {% if grade.value >= 90 %}
+                                <span class="badge rounded-pill bg-success fs-6">{{ grade.value }}</span>
+                            {% elif grade.value >= 75 %}
+                                <span class="badge rounded-pill bg-primary fs-6">{{ grade.value }}</span>
+                            {% elif grade.value >= 60 %}
+                                <span class="badge rounded-pill bg-warning text-dark fs-6">{{ grade.value }}</span>
+                            {% else %}
+                                <span class="badge rounded-pill bg-danger fs-6">{{ grade.value }}</span>
+                            {% endif %}
                         </td>
-                        {% if user.role != 'teacher' %}
-                        <td class="text-muted small">{{ grade.teacher.user.get_last_name }}</td>
+                        {% if user.role != 'student' %}
+                        <td class="text-muted small">{{ grade.teacher.user.last_name }}</td>
                         {% endif %}
                     </tr>
                     {% empty %}
-                    <tr><td colspan="6" class="text-center text-muted py-4">Оцінок не знайдено.</td></tr>
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="bi bi-search fs-2 d-block mb-2"></i>
+                            Оцінок не знайдено. Спробуйте змінити параметри фільтрації.
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
 
-        {% if is_paginated %}
-        <nav class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Попередня</a></li>
-                {% endif %}
-                <li class="page-item disabled"><span class="page-link">Сторінка {{ page_obj.number }} з {{ page_obj.paginator.num_pages }}</span></li>
-                {% if page_obj.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Наступна</a></li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
+        {# Пагінація — тільки один блок, зберігає GET-параметри через url_replace #}
+        {% include 'includes/pagination.html' %}
+
     </div>
 </div>
-    {% include 'includes/pagination.html' %}
 {% endblock %}

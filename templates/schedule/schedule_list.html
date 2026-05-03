@@ -3,47 +3,129 @@
 {% block title %}Розклад занять{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mt-4 mb-3">
-    <h2>Розклад занять</h2>
-    {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}
-        <a href="{% url 'schedule_add' %}" class="btn btn-primary">+ Додати заняття</a>
+<div class="d-flex justify-content-between align-items-center mt-2 mb-4">
+    <h2><i class="bi bi-calendar3 text-primary"></i> Розклад занять</h2>
+    {% if user.role == 'teacher' or user.is_superuser %}
+        <a href="{% url 'schedule_add' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Додати заняття
+        </a>
     {% endif %}
 </div>
 
-<div class="row">
-    {% for day in schedule_data %}
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-dark text-white text-center">
-                    <h5 class="mb-0">{{ day.day_name }}</h5>
-                </div>
-                <div class="card-body p-0">
-                    <ul class="list-group list-group-flush">
-                        {% for lesson in day.lessons %}
-                            <li class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <strong class="text-primary">{{ lesson.start_time|time:"H:i" }} - {{ lesson.end_time|time:"H:i" }}</strong>
-                                    <span class="badge bg-secondary">{{ lesson.get_lesson_type_display }}</span>
-                                </div>
-                                <div class="fw-bold">{{ lesson.subject.name }}</div>
-                                <div class="text-muted small">
-                                    <i class="bi bi-person"></i> {{ lesson.teacher.user.get_full_name }} <br>
-                                    <i class="bi bi-geo-alt"></i> Ауд: {{ lesson.room }} | Група: {{ lesson.group.name }}
-                                </div>
-                                {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}
-                                    <div class="mt-2 text-end">
-                                        <a href="{% url 'schedule_edit' lesson.pk %}" class="btn btn-sm btn-outline-warning">Ред.</a>
-                                        <a href="{% url 'schedule_delete' lesson.pk %}" class="btn btn-sm btn-outline-danger">Вид.</a>
-                                    </div>
-                                {% endif %}
-                            </li>
-                        {% empty %}
-                            <li class="list-group-item text-center text-muted py-4">Занять немає</li>
-                        {% endfor %}
-                    </ul>
+{# ── Панель фільтрації (для вчителя та адміна) ── #}
+{% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-end">
+            {% if groups %}
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-muted mb-1">ГРУПА</label>
+                <select name="group" class="form-select">
+                    <option value="">Всі групи</option>
+                    {% for g in groups %}
+                        <option value="{{ g.pk }}" {% if selected_group == g.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ g.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-muted mb-1">ПРЕДМЕТ</label>
+                <select name="subject" class="form-select">
+                    <option value="">Всі предмети</option>
+                    {% for s in subjects %}
+                        <option value="{{ s.pk }}" {% if selected_subject == s.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ s.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-muted mb-1">ТИП ЗАНЯТТЯ</label>
+                <select name="lesson_type" class="form-select">
+                    <option value="">Всі типи</option>
+                    {% for value, label in lesson_types %}
+                        <option value="{{ value }}" {% if selected_lesson_type == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel"></i> Фільтр
+                </button>
+                <a href="{% url 'schedule_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{# ── Розклад по днях тижня ── #}
+{% for day in schedule_data %}
+<div class="mb-4">
+    <h5 class="fw-bold text-secondary border-bottom pb-2 mb-3">
+        <i class="bi bi-calendar-day"></i> {{ day.day_name }}
+    </h5>
+
+    {% if day.lessons %}
+        <div class="row g-3">
+            {% for lesson in day.lessons %}
+            <div class="col-md-6 col-xl-4">
+                <div class="card h-100 shadow-sm border-0 border-start border-4
+                    {% if lesson.lesson_type == 'lecture' %}border-primary
+                    {% elif lesson.lesson_type == 'practice' %}border-success
+                    {% else %}border-warning{% endif %}">
+                    <div class="card-body py-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="fw-bold">{{ lesson.subject.name }}</span>
+                            <span class="badge
+                                {% if lesson.lesson_type == 'lecture' %}bg-primary
+                                {% elif lesson.lesson_type == 'practice' %}bg-success
+                                {% else %}bg-warning text-dark{% endif %}">
+                                {{ lesson.get_lesson_type_display }}
+                            </span>
+                        </div>
+                        <div class="text-muted small">
+                            <div><i class="bi bi-clock"></i>
+                                {{ lesson.start_time|time:"H:i" }} – {{ lesson.end_time|time:"H:i" }}
+                            </div>
+                            <div><i class="bi bi-person"></i>
+                                {{ lesson.teacher.user.get_full_name }}
+                            </div>
+                            <div><i class="bi bi-geo-alt"></i> Ауд. {{ lesson.room }}</div>
+                            {% if user.role != 'student' %}
+                            <div><i class="bi bi-people"></i> {{ lesson.group.name }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if user.role == 'teacher' or user.is_superuser %}
+                    <div class="card-footer bg-transparent border-top-0 pt-0 pb-2 px-3">
+                        <a href="{% url 'schedule_edit' lesson.pk %}" class="btn btn-sm btn-outline-warning me-1">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'schedule_delete' lesson.pk %}" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
+            {% endfor %}
         </div>
-    {% endfor %}
+    {% else %}
+        <p class="text-muted fst-italic ps-2">Занять немає</p>
+    {% endif %}
 </div>
+{% empty %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-calendar-x fs-1 d-block mb-3"></i>
+    <p>Розклад порожній. Спробуйте змінити параметри фільтрації.</p>
+</div>
+{% endfor %}
+
 {% endblock %}

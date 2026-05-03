@@ -1,24 +1,74 @@
 {% extends 'base.html' %}
+{% load query_tags %}
 
 {% block title %}Список груп{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mt-4 mb-3">
-    <h2>Групи</h2>
+<div class="d-flex justify-content-between align-items-center mt-2 mb-4">
+    <h2><i class="bi bi-people-fill text-primary"></i> Групи</h2>
     {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}
-        <a href="{% url 'subject_add' %}" class="btn btn-primary">+ Додати групу</a>
+        <a href="{% url 'group_add' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Додати групу
+        </a>
     {% endif %}
 </div>
 
-<div class="table-responsive">
-    <table class="table table-hover table-bordered shadow-sm bg-white">
+{# ── Панель пошуку і фільтрації ── #}
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label small fw-semibold text-muted mb-1">ПОШУК ЗА НАЗВОЮ АБО ФАКУЛЬТЕТОМ</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" value="{{ q }}"
+                           class="form-control" placeholder="Назва групи або факультет...">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold text-muted mb-1">СОРТУВАННЯ</label>
+                <select name="ordering" class="form-select">
+                    <option value="-year_formed" {% if ordering == '-year_formed' %}selected{% endif %}>За роком (новіші)</option>
+                    <option value="year_formed"  {% if ordering == 'year_formed'  %}selected{% endif %}>За роком (старіші)</option>
+                    <option value="name"         {% if ordering == 'name'         %}selected{% endif %}>За назвою А-Я</option>
+                    <option value="-name"        {% if ordering == '-name'        %}selected{% endif %}>За назвою Я-А</option>
+                    <option value="faculty"      {% if ordering == 'faculty'      %}selected{% endif %}>За факультетом</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel"></i> Фільтр
+                </button>
+                <a href="{% url 'group_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# ── Таблиця ── #}
+<div class="table-responsive shadow-sm rounded">
+    <table class="table table-hover table-bordered align-middle mb-0 bg-white">
         <thead class="table-light">
             <tr>
-                <th>Назва групи</th>
-                <th>Факультет</th>
-                <th>Рік формування</th>
+                <th>
+                    <a href="?{% url_replace ordering='name' %}" class="text-decoration-none text-dark">
+                        Назва групи <i class="bi bi-arrow-down-up text-muted small"></i>
+                    </a>
+                </th>
+                <th>
+                    <a href="?{% url_replace ordering='faculty' %}" class="text-decoration-none text-dark">
+                        Факультет <i class="bi bi-arrow-down-up text-muted small"></i>
+                    </a>
+                </th>
+                <th>
+                    <a href="?{% url_replace ordering='year_formed' %}" class="text-decoration-none text-dark">
+                        Рік формування <i class="bi bi-arrow-down-up text-muted small"></i>
+                    </a>
+                </th>
                 {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}
-                <th width="150">Дії</th>
+                <th width="130">Дії</th>
                 {% endif %}
             </tr>
         </thead>
@@ -30,18 +80,27 @@
                 <td>{{ group.year_formed }}</td>
                 {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}
                 <td>
-                    <a href="{% url 'subject_edit' subject.pk %}" class="btn btn-sm btn-warning">Ред.</a>
-                    <a href="{% url 'subject_delete' subject.pk %}" class="btn btn-sm btn-danger">Вид.</a>
+                    {# ВИПРАВЛЕНО: group.pk замість subject.pk #}
+                    <a href="{% url 'group_edit' group.pk %}" class="btn btn-sm btn-outline-warning">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'group_delete' group.pk %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                    </a>
                 </td>
                 {% endif %}
             </tr>
             {% empty %}
             <tr>
-                <td colspan="4" class="text-center text-muted">Груп поки немає.</td>
+                <td colspan="4" class="text-center text-muted py-5">
+                    <i class="bi bi-search fs-2 d-block mb-2"></i>
+                    Груп не знайдено.
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
-    {% include 'includes/pagination.html' %}
+
+{% include 'includes/pagination.html' %}
 {% endblock %}
