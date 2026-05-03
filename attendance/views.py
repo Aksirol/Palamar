@@ -23,30 +23,41 @@ class AttendanceMarkView(TeacherRequiredMixin, View):
         groups = Group.objects.all()
         subjects = Subject.objects.all()
 
-        students = None
-        existing_data = {}  # Словник для збереження вже відмічених даних
+        # students_with_state — список dict з готовим станом для кожного студента.
+        # Це виправляє баг шаблону, де вкладений {% for key, record in existing_data.items %}
+        # не міг знайти потрібного студента і всі чекбокси скидались в unchecked.
+        students_with_state = []
 
         if group_id and subject_id:
-            # Вирішуємо N+1 через select_related
-            students = Student.objects.filter(group_id=group_id).select_related('user')
+            students_qs = Student.objects.filter(
+                group_id=group_id
+            ).select_related('user').order_by('user__last_name')
 
-            # Шукаємо вже існуючі записи за цей день, щоб заповнити чекбокси
+            # Один запит для всіх записів відвідуваності за цей день
             records = Attendance.objects.filter(
                 student__group_id=group_id,
                 subject_id=subject_id,
                 date=date_str
             )
-            for record in records:
-                existing_data[record.student_id] = record
+            # Словник {student_id: record} — O(1) пошук у шаблоні
+            existing_map = {r.student_id: r for r in records}
+
+            for student in students_qs:
+                record = existing_map.get(student.pk)
+                students_with_state.append({
+                    'student':    student,
+                    # Якщо запису немає (нова/не відмічена дата) → за замовчуванням "присутній"
+                    'is_present': record.is_present if record is not None else True,
+                    'reason':     record.reason     if record is not None else '',
+                })
 
         return render(request, self.template_name, {
             'groups': groups,
             'subjects': subjects,
-            'selected_group': int(group_id) if group_id else None,
+            'selected_group':   int(group_id)   if group_id   else None,
             'selected_subject': int(subject_id) if subject_id else None,
             'selected_date': date_str,
-            'students': students,
-            'existing_data': existing_data,
+            'students_with_state': students_with_state,
         })
 
     def post(self, request):
@@ -74,7 +85,7 @@ class AttendanceMarkView(TeacherRequiredMixin, View):
             is_present = request.POST.get(f'status_{student.pk}') == 'on'
             reason = request.POST.get(f'reason_{student.pk}', '').strip()
 
-            # МАГІЯ DJANGO: update_or_create створює запис, якщо його нема, 
+            # МАГІЯ DJANGO: update_or_create створює запис, якщо його нема,
             # або оновлює існуючий, якщо він вже є для цього студента/предмета/дати
             Attendance.objects.update_or_create(
                 student=student,
@@ -125,12 +136,31 @@ class TeacherAttendanceStatsView(TeacherRequiredMixin, View):
 
     def get(self, request):
         user = request.user
-        # Якщо це адміністратор — показуємо йому всі групи і всі предмети
+        # .distinct('group', 'subject') — PostgreSQL-only синтаксис, не працює в SQLite.
+        # Замінено на values() + distinct() який працює у всіх СУБД.
         if user.is_superuser or user.role == 'admin':
-            schedules = Schedule.objects.select_related('group', 'subject').distinct('group', 'subject')
+            schedule_pairs = (
+                Schedule.objects
+                .values('group_id', 'subject_id')
+                .distinct()
+                .select_related()
+            )
+            # Отримуємо повноцінні об'єкти для шаблону
+            seen = set()
+            schedules = []
+            for entry in Schedule.objects.select_related('group', 'subject').all():
+                key = (entry.group_id, entry.subject_id)
+                if key not in seen:
+                    seen.add(key)
+                    schedules.append(entry)
         else:
-            # Якщо це викладач — лише його
             teacher = user.teacher_profile
-            schedules = teacher.schedule_set.select_related('group', 'subject').distinct('group', 'subject')
+            seen = set()
+            schedules = []
+            for entry in teacher.schedule_set.select_related('group', 'subject').all():
+                key = (entry.group_id, entry.subject_id)
+                if key not in seen:
+                    seen.add(key)
+                    schedules.append(entry)
 
         return render(request, self.template_name, {'schedules': schedules})

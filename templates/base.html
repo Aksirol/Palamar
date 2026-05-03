@@ -28,6 +28,14 @@
                         <li class="nav-item"><a class="nav-link" href="{% url 'grade_list' %}"><i class="bi bi-journal-bookmark-fill"></i> Журнал оцінок</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'assignment_list' %}"><i class="bi bi-briefcase"></i> Завдання</a></li>
 
+                        {% if user.role == 'admin' or user.is_superuser %}
+                            <li class="nav-item">
+                                <a class="nav-link text-warning fw-bold" href="{% url 'pending_students' %}">
+                                    <i class="bi bi-person-fill-add"></i> Заявки студентів
+                                </a>
+                            </li>
+                        {% endif %}
+
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i class="bi bi-people"></i> Відвідуваність</a>
                             <ul class="dropdown-menu shadow-sm">

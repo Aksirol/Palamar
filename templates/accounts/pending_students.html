@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Заявки студентів{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+    <h2><i class="bi bi-person-lines-fill"></i> Заявки на підтвердження</h2>
+    <span class="badge bg-secondary fs-6">Очікують: {{ pending_students.count }}</span>
+</div>
+
+<div class="card shadow-sm border-0 mb-5">
+    {% if pending_students %}
+        <div class="table-responsive bg-white rounded">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Студент</th>
+                        <th>Email</th>
+                        <th width="200">Група (Обов'язково)</th>
+                        <th width="200">Спеціальність</th>
+                        <th width="100">Курс</th>
+                        <th width="150">Студентський №</th>
+                        <th width="120" class="text-center">Дія</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in pending_students %}
+                    <form id="confirm_form_{{ student.pk }}" method="post" action="{% url 'pending_students' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="student_id" value="{{ student.pk }}">
+                    </form>
+
+                    <tr>
+                        <td class="fw-bold">{{ student.user.get_full_name }}</td>
+                        <td class="text-muted small">{{ student.user.email }}</td>
+                        
+                        <td>
+                            <select name="group_id" form="confirm_form_{{ student.pk }}" class="form-select form-select-sm" required>
+                                <option value="">-- Оберіть --</option>
+                                {% for g in groups %}
+                                    <option value="{{ g.id }}">{{ g.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" name="specialty" form="confirm_form_{{ student.pk }}" class="form-control form-control-sm" placeholder="Напр. КН">
+                        </td>
+                        <td>
+                            <input type="number" name="year_of_study" form="confirm_form_{{ student.pk }}" class="form-control form-control-sm" value="1" min="1" max="6">
+                        </td>
+                        <td>
+                            <input type="text" name="student_card_no" form="confirm_form_{{ student.pk }}" class="form-control form-control-sm" placeholder="AA-000000">
+                        </td>
+                        <td class="text-center">
+                            <button type="submit" form="confirm_form_{{ student.pk }}" class="btn btn-success btn-sm w-100">
+                                <i class="bi bi-check-circle"></i> Підтвердити
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="card-body text-center py-5">
+            <i class="bi bi-emoji-smile fs-1 text-success mb-3 d-block"></i>
+            <h5 class="text-muted">Нових заявок немає!</h5>
+            <p class="text-muted mb-0">Усі зареєстровані студенти вже розподілені по групах.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

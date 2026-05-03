@@ -97,11 +97,12 @@ class TeacherGroupStatsView(TeacherRequiredMixin, View):
             # Перевірка безпеки: чи дійсно він має доступ до цієї групи
             if selected_group and selected_group in groups:
 
-                # 2. Фільтруємо оцінки: адмін бачить всі, викладач - лише зі своїх предметів
-                if is_admin:
-                    qs = Grade.objects.filter(student__group=selected_group)
-                else:
-                    qs = Grade.objects.filter(student__group=selected_group, teacher=user.teacher_profile)
+                # 2. Оцінки для всієї групи (незалежно від викладача).
+                # Раніше для не-адміна фільтрувалось teacher=user.teacher_profile,
+                # через що викладач бачив лише свої оцінки — якщо в групі є оцінки
+                # від інших викладачів, статистика була порожньою.
+                # Статистика ГРУПИ має показувати весь зріз успішності.
+                qs = Grade.objects.filter(student__group=selected_group)
 
                 # 3. Дані для графіка (середній бал по предметах у цій групі)
                 subject_avg = qs.values('subject__name').annotate(avg_score=Avg('value'))
