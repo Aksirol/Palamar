@@ -4,6 +4,7 @@ from django.views import View
 from django.contrib import messages
 from django.utils import timezone
 from accounts.mixins import TeacherRequiredMixin, StudentRequiredMixin
+from schedule.models import Schedule
 from subjects.models import Group, Subject
 from accounts.models import Student
 from .models import Attendance
@@ -123,8 +124,13 @@ class TeacherAttendanceStatsView(TeacherRequiredMixin, View):
     template_name = 'attendance/teacher_stats.html'
 
     def get(self, request):
-        # Отримуємо всі предмети та групи, де викладає цей вчитель
-        teacher = request.user.teacher_profile
-        schedules = teacher.schedule_set.select_related('group', 'subject').distinct('group', 'subject')
+        user = request.user
+        # Якщо це адміністратор — показуємо йому всі групи і всі предмети
+        if user.is_superuser or user.role == 'admin':
+            schedules = Schedule.objects.select_related('group', 'subject').distinct('group', 'subject')
+        else:
+            # Якщо це викладач — лише його
+            teacher = user.teacher_profile
+            schedules = teacher.schedule_set.select_related('group', 'subject').distinct('group', 'subject')
 
         return render(request, self.template_name, {'schedules': schedules})

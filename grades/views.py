@@ -46,8 +46,8 @@ class GradeCreateView(TeacherRequiredMixin, SuccessMessageMixin, CreateView):
     success_message = "Оцінку успішно виставлено!"
 
     def dispatch(self, request, *args, **kwargs):
-        # Якщо це адмін (суперкористувач), зручно перенаправляємо його в Django Admin
-        if request.user.is_authenticated and request.user.is_superuser:
+        # Додаємо перевірку role == 'admin'
+        if request.user.is_authenticated and (request.user.is_superuser or request.user.role == 'admin'):
             messages.info(request, "Адміністратори виставляють оцінки через цю панель.")
             return redirect('admin:grades_grade_add')
         return super().dispatch(request, *args, **kwargs)

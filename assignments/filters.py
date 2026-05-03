@@ -1,46 +1,45 @@
 import django_filters
 from django import forms
-from .models import Grade
+from .models import Assignment
 
-class GradeFilter(django_filters.FilterSet):
+class AssignmentFilter(django_filters.FilterSet):
 
-    student_name = django_filters.CharFilter(
-        field_name='student__user__last_name',
+    title = django_filters.CharFilter(
         lookup_expr='icontains',
-        label='Прізвище студента',
+        label='Назва завдання',
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Пошук за прізвищем...',
+            'placeholder': 'Пошук за назвою...',
         })
     )
 
-    date_from = django_filters.DateFilter(
-        field_name='date', lookup_expr='gte', label='З дати',
+    deadline_from = django_filters.DateFilter(
+        field_name='deadline', lookup_expr='gte', label='Дедлайн від',
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
     )
-    date_to = django_filters.DateFilter(
-        field_name='date', lookup_expr='lte', label='По дату',
+    deadline_to = django_filters.DateFilter(
+        field_name='deadline', lookup_expr='lte', label='Дедлайн до',
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
     )
 
     ordering = django_filters.OrderingFilter(
         fields=(
-            ('date',  'date'),
-            ('value', 'value'),
+            ('deadline', 'deadline'),
+            ('title',    'title'),
         ),
         field_labels={
-            'date':   'За датою (зростання)',
-            '-date':  'За датою (спадання)',
-            'value':  'За оцінкою (зростання)',
-            '-value': 'За оцінкою (спадання)',
+            'deadline':  'За дедлайном (зростання)',
+            '-deadline': 'За дедлайном (спадання)',
+            'title':     'За назвою (А-Я)',
+            '-title':    'За назвою (Я-А)',
         },
         label='Сортування'
         # widget=forms.Select() звідси ПРИБРАНО
     )
 
     class Meta:
-        model = Grade
-        fields = ['subject', 'type']
+        model = Assignment
+        fields = ['subject']
         # Блок widgets звідси ПРИБРАНО
 
     def __init__(self, *args, **kwargs):

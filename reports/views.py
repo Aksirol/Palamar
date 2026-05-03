@@ -77,10 +77,11 @@ class TeacherGroupStatsView(TeacherRequiredMixin, View):
         selected_group_id = request.GET.get('group')
 
         # 1. Визначаємо, які групи може бачити користувач
-        if user.is_superuser:
+        is_admin = user.is_superuser or user.role == 'admin'
+
+        if is_admin:
             groups = Group.objects.all()
         else:
-            # Викладач бачить лише ті групи, де має заняття в розкладі
             teacher_profile = user.teacher_profile
             group_ids = Schedule.objects.filter(teacher=teacher_profile).values_list('group_id', flat=True).distinct()
             groups = Group.objects.filter(id__in=group_ids)
@@ -97,7 +98,7 @@ class TeacherGroupStatsView(TeacherRequiredMixin, View):
             if selected_group and selected_group in groups:
 
                 # 2. Фільтруємо оцінки: адмін бачить всі, викладач - лише зі своїх предметів
-                if user.is_superuser:
+                if is_admin:
                     qs = Grade.objects.filter(student__group=selected_group)
                 else:
                     qs = Grade.objects.filter(student__group=selected_group, teacher=user.teacher_profile)
