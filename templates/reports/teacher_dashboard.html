@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Статистика моїх груп{% endblock %}
+
+{% block content %}
+<h2 class="mt-4 mb-4">Статистика груп</h2>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body bg-light rounded">
+        <form method="get" class="row g-3 align-items-center">
+            <div class="col-md-8">
+                <select name="group" class="form-select" required>
+                    <option value="">-- Оберіть групу для перегляду статистики --</option>
+                    {% for g in groups %}
+                        <option value="{{ g.id }}" {% if selected_group and g.id == selected_group.id %}selected{% endif %}>
+                            {{ g.name }} ({{ g.faculty }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Показати</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if selected_group %}
+    <h4 class="mb-3 text-secondary">Група: {{ selected_group.name }}</h4>
+
+    {% if not students_stats %}
+        <div class="alert alert-info">Для цієї групи ще немає виставлених оцінок.</div>
+    {% else %}
+        <div class="row">
+            <div class="col-md-5 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-dark text-white">
+                        <h6 class="mb-0">Рейтинг студентів (Середній бал)</h6>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Студент</th>
+                                    <th class="text-center">Бал</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students_stats %}
+                                <tr>
+                                    <td class="text-muted">{{ forloop.counter }}</td>
+                                    <td class="fw-bold">{{ student.name }}</td>
+                                    <td class="text-center">
+                                        <span class="badge {% if student.avg >= 90 %}bg-success{% elif student.avg >= 70 %}bg-primary{% elif student.avg >= 50 %}bg-warning text-dark{% else %}bg-danger{% endif %} fs-6">
+                                            {{ student.avg }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white">
+                        <h6 class="mb-0">Середній бал групи за предметами</h6>
+                    </div>
+                    <div class="card-body d-flex align-items-center justify-content-center">
+                        {% if chart_data_json %}
+                            <canvas id="groupChart"></canvas>
+                        {% else %}
+                            <p class="text-muted">Недостатньо даних для побудови графіка.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if chart_data_json %}
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                const rawData = JSON.parse('{{ chart_data_json|escapejs }}');
+                const ctx = document.getElementById('groupChart').getContext('2d');
+                
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: rawData.labels,
+                        datasets: [{
+                            label: 'Середній бал групи',
+                            data: rawData.data,
+                            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: { beginAtZero: true, max: 100 }
+                        }
+                    }
+                });
+            });
+        </script>
+        {% endif %}
+    {% endif %}
+{% endif %}
+{% endblock %}

@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 class User(AbstractUser):
     ROLE_CHOICES = (
@@ -16,7 +18,12 @@ class User(AbstractUser):
 
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='teacher_profile', primary_key=True)
-    department = models.CharField(max_length=100, verbose_name='Кафедра/Відділення')
+    department = models.CharField(
+        max_length=100,
+        blank=True,           # Додано
+        default='Не вказано', # Додано
+        verbose_name='Кафедра/Відділення'
+    )
     academic_degree = models.CharField(max_length=100, blank=True, null=True, verbose_name='Вчений ступінь')
 
     def __str__(self):
@@ -31,3 +38,24 @@ class Student(models.Model):
 
     def __str__(self):
         return f"Студент: {self.user.get_full_name()}"
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    """Автоматично створює Teacher або Student профіль при реєстрації."""
+    if created:
+        if instance.role == 'teacher':
+            Teacher.objects.get_or_create(
+                user=instance,
+                defaults={'department': 'Не вказано'}
+            )
+        elif instance.role == 'student':
+            # Student має обов'язкові поля — створюємо з дефолтами
+            # Адмін потім заповнить їх через адмін-панель
+            Student.objects.get_or_create(
+                user=instance,
+                defaults={
+                    'specialty': 'Не вказано',
+                    'year_of_study': 1,
+                    'student_card_no': f'TEMP-{instance.pk}'
+                }
+            )

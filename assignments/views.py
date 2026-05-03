@@ -46,7 +46,7 @@ class AssignmentCreateView(TeacherRequiredMixin, CreateView):
         return context
 
 
-class AssignmentDetailView(DetailView):
+class AssignmentDetailView(LoginRequiredMixin, DetailView):
     model = Assignment
     template_name = 'assignments/assignment_detail.html'
     context_object_name = 'assignment'

@@ -117,3 +117,14 @@ class AttendanceStatsView(StudentRequiredMixin, View):
             })
 
         return render(request, self.template_name, {'stats': stats})
+
+
+class TeacherAttendanceStatsView(TeacherRequiredMixin, View):
+    template_name = 'attendance/teacher_stats.html'
+
+    def get(self, request):
+        # Отримуємо всі предмети та групи, де викладає цей вчитель
+        teacher = request.user.teacher_profile
+        schedules = teacher.schedule_set.select_related('group', 'subject').distinct('group', 'subject')
+
+        return render(request, self.template_name, {'schedules': schedules})
