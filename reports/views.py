@@ -4,7 +4,6 @@ from django.views.generic import View
 from django.http import HttpResponse
 from django.db.models import Avg
 from django.template.loader import render_to_string
-from weasyprint import HTML
 
 from accounts.mixins import StudentRequiredMixin
 from grades.models import Grade
@@ -59,6 +58,14 @@ class DownloadPDFReportView(StudentRequiredMixin, View):
         html_string = render_to_string('reports/pdf_report.html', context)
 
         # 2. Конвертуємо HTML у PDF через WeasyPrint
+        try:
+            from weasyprint import HTML
+        except Exception as e:
+            return HttpResponse(
+                f"PDF generation is not available on this system: {e}",
+                status=501,
+                content_type="text/plain"
+            )
         html = HTML(string=html_string)
         pdf = html.write_pdf()
 

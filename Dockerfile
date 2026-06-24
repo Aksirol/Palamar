@@ -27,8 +27,11 @@ RUN pip install --upgrade pip && \
 # Копіюємо весь проєкт у контейнер
 COPY . /app/
 
-# Відкриваємо порт 8000
+# Скрипт запуску — робимо виконуваним
+RUN chmod +x /app/start_render.sh
+
+# Відкриваємо порт
 EXPOSE 8000
 
-# Команда для запуску сервера
+# Локальна розробка — перевизначається у docker-compose.yml
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: diary-palamar
+    runtime: docker
+    plan: free
+    dockerCommand: /app/start_render.sh
+    healthCheckPath: /accounts/login/
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "True"
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://diary-palamar.onrender.com"
+    disk:
+      name: persistent-data
+      mountPath: /app/db_data
+      sizeGB: 1

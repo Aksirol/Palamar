@@ -64,11 +64,6 @@ class AssignmentCreateView(TeacherRequiredMixin, CreateView):
             return redirect('admin:assignments_assignment_add')
         return super().dispatch(request, *args, **kwargs)
 
-    def form_valid(self, form):
-        form.instance.teacher = self.request.user.teacher_profile
-        messages.success(self.request, "Завдання успішно створено!")
-        return super().form_valid(form)
-
 
 class AssignmentDetailView(LoginRequiredMixin, DetailView):
     model = Assignment

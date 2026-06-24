@@ -15,79 +15,117 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow mb-4">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}"><i class="bi bi-mortarboard-fill text-warning"></i> Щоденник</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
+                <i class="bi bi-mortarboard-fill text-warning fs-5"></i>
+                <span>Щоденник</span>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'schedule_list' %}"><i class="bi bi-calendar3"></i> Розклад</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'grade_list' %}"><i class="bi bi-journal-bookmark-fill"></i> Журнал оцінок</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'assignment_list' %}"><i class="bi bi-briefcase"></i> Завдання</a></li>
+                {% if user.is_authenticated %}
+                <ul class="navbar-nav me-auto align-items-lg-center">
+                    <li class="nav-item">
+                        <a class="nav-link px-3" href="{% url 'schedule_list' %}">
+                            <i class="bi bi-calendar3 me-1"></i>Розклад
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3" href="{% url 'grade_list' %}">
+                            <i class="bi bi-journal-bookmark-fill me-1"></i>Журнал оцінок
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3" href="{% url 'assignment_list' %}">
+                            <i class="bi bi-briefcase me-1"></i>Завдання
+                        </a>
+                    </li>
 
-                        {% if user.role == 'admin' or user.is_superuser %}
-                            <li class="nav-item">
-                                <a class="nav-link text-warning fw-bold" href="{% url 'pending_students' %}">
-                                    <i class="bi bi-person-fill-add"></i> Заявки студентів
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle px-3" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-people me-1"></i>Відвідуваність
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark shadow">
+                            {% if user.role == 'teacher' or user.is_superuser or user.role == 'admin' %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'attendance_mark' %}">
+                                        <i class="bi bi-clipboard-check me-2"></i>Відмітити (Журнал)
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'teacher_dashboard' %}">
+                                        <i class="bi bi-pie-chart-fill me-2"></i>Статистика груп
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% if user.role == 'student' %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'student_dashboard' %}">
+                                        <i class="bi bi-bar-chart-fill me-2"></i>Мій рейтинг
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </li>
+
+                    {% if user.role == 'teacher' or user.is_superuser or user.role == 'admin' %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle px-3" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-gear me-1"></i>Довідники
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark shadow">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'subject_list' %}">
+                                    <i class="bi bi-book me-2"></i>Предмети
                                 </a>
                             </li>
-                        {% endif %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'group_list' %}">
+                                    <i class="bi bi-people-fill me-2"></i>Групи
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% endif %}
 
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i class="bi bi-people"></i> Відвідуваність</a>
-                            <ul class="dropdown-menu shadow-sm">
-                                {% if user.role == 'teacher' or user.is_superuser %}
-                                    <li><a class="dropdown-item" href="{% url 'attendance_mark' %}">Відмітити (Журнал)</a></li>
-                                {% endif %}
-                                {% if user.role == 'student' %}
-                                    <li class="nav-item">
-                                        <a class="nav-link text-info fw-bold" href="{% url 'student_dashboard' %}"><i class="bi bi-bar-chart-fill"></i> Мій рейтинг</a>
-                                    </li>
-                                {% endif %}
-
-                                {% if user.role == 'teacher' or user.is_superuser %}
-                                    <li class="nav-item">
-                                        <a class="nav-link text-warning fw-bold" href="{% url 'teacher_dashboard' %}"><i class="bi bi-pie-chart-fill"></i> Статистика груп</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </li>
-
-                        {% if user.role == 'teacher' or user.is_superuser %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"><i class="bi bi-gear"></i> Довідники</a>
-                            <ul class="dropdown-menu shadow-sm">
-                                <li><a class="dropdown-item" href="{% url 'subject_list' %}">Предмети</a></li>
-                                <li><a class="dropdown-item" href="{% url 'group_list' %}">Групи</a></li>
-                            </ul>
-                        </li>
-                        {% endif %}
-
-                        {% if user.role == 'student' %}
-                            <li class="nav-item"><a class="nav-link text-info fw-bold" href="{% url 'student_dashboard' %}"><i class="bi bi-bar-chart-fill"></i> Мій рейтинг</a></li>
-                        {% endif %}
+                    {% if user.role == 'admin' or user.is_superuser %}
+                    <li class="nav-item">
+                        <a class="nav-link px-3 text-warning fw-semibold" href="{% url 'pending_students' %}">
+                            <i class="bi bi-person-fill-add me-1"></i>Заявки
+                            <span class="badge bg-warning text-dark ms-1">!</span>
+                        </a>
+                    </li>
                     {% endif %}
                 </ul>
-                <ul class="navbar-nav align-items-lg-center">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item text-light me-3 d-none d-lg-block">
-                            <i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.username }}
-                            <span class="badge bg-secondary ms-1">{{ user.get_role_display }}</span>
-                        </li>
-                        <li class="nav-item">
-                            <form method="post" action="{% url 'logout' %}" class="d-inline">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-outline-danger btn-sm mt-2 mt-lg-0"><i class="bi bi-box-arrow-right"></i> Вихід</button>
-                            </form>
-                        </li>
-                    {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Вхід</a></li>
-                        <li class="nav-item"><a class="btn btn-primary btn-sm ms-lg-2 mt-2 mt-lg-0" href="{% url 'register' %}">Реєстрація</a></li>
-                    {% endif %}
+
+                <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
+                    <div class="d-none d-lg-flex align-items-center gap-2 text-light">
+                        <i class="bi bi-person-circle fs-5 text-secondary"></i>
+                        <div class="lh-sm">
+                            <div class="small fw-semibold">{{ user.get_full_name|default:user.username }}</div>
+                            <div><span class="badge bg-secondary" style="font-size:.65rem">{{ user.get_role_display }}</span></div>
+                        </div>
+                    </div>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-box-arrow-right me-1"></i>Вихід
+                        </button>
+                    </form>
+                </div>
+
+                {% else %}
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Вхід</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary btn-sm" href="{% url 'register' %}">Реєстрація</a>
+                    </li>
                 </ul>
+                {% endif %}
             </div>
         </div>
     </nav>

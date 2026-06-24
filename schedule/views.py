@@ -32,7 +32,7 @@ class ScheduleListView(LoginRequiredMixin, ListView):
         subject_id = self.request.GET.get('subject')
         lesson_type = self.request.GET.get('lesson_type')
 
-        if group_id and user.role in ['admin'] or user.is_superuser:
+        if group_id and (user.role == 'admin' or user.is_superuser):
             qs = qs.filter(group_id=group_id)
         if subject_id:
             qs = qs.filter(subject_id=subject_id)
